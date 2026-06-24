@@ -1,0 +1,436 @@
+cloud front
+
+what: 
+cloud manged aws service that provide solutions for cdn (content delivery network)
+
+most of the us interact with cdn on daily bases example youtube snapchat
+
+Example:
+
+there is a image and video sharing platforms like instagram 
+
+person in australia trying to upload a image in instagram portal it gets uploaded to central to storage system now any body in the world can access this image 
+
+with out cdn if we follow yhis approach 
+if one person in india want to access this image which is in australia request should go thrioght the multiple routers and multip;le hops(routers) and reach the central system and should pass the same response also 
+
+if this is the case latency would be high and user experienmce is bad .. to solve this issue we have cdn 
+
+cdn will do in a simple way 
+
+person in australia -> upload a image -> cdn -> central storage system
+ask the request to access the cdn -> cdn will create local copies of images
+instead of storing in central locations image wll be stored in edge locations 
+
+copy will be  stored in multiple regions like in india region, Usa region, australia region
+
+request coming from the india will be checked in cdn in india regiom
+
+s3 bucker is object based storage which is used to storage the static resoures to it directly we can use from the s3 bucket 
+
+but this is nt a good apprach to follow there many challanges like security 
+latency(everyone can acces), cost and manymore 
+
+for this we have cdn itn helps to canche the content in nearest regions 
+
+cdn services is cloud front
+
+s3 will serve content in to edge location next time from the delhi if the request comes it will access it from the nearest edge location 
+
+it enhances the security cause user are not directly accesing the s3 
+cost will be reduced due to low upload and downloads
+low latency because data transfer will be in edge locations
+
+
+
+# AWS CloudFront Notes (Interview Preparation)
+
+## What is CloudFront?
+
+AWS CloudFront is a fully managed AWS service that provides CDN (Content Delivery Network) capabilities.
+
+CDN helps deliver content such as:
+
+* Images
+* Videos
+* Static files (HTML, CSS, JS)
+* APIs
+* Streaming content
+
+The main goal of CloudFront is to reduce latency and improve performance by delivering content from locations closer to users.
+
+Examples of applications using CDN:
+
+* YouTube
+* Instagram
+* Snapchat
+* Netflix
+
+---
+
+# Why do we need CDN?
+
+Let’s take an example of Instagram.
+
+Suppose a user in Australia uploads an image.
+
+Flow:
+User in Australia → Upload Image → Central Storage (S3 / Storage System)
+
+Now, if a user in India wants to view that image:
+
+Without CDN:
+
+* Request goes from India to Australia (or central storage region)
+* Passes through multiple routers and network hops
+* Fetches image from origin server
+* Response returns back to India
+
+Problems:
+
+* High latency
+* Slow loading
+* Bad user experience
+* High load on origin server
+
+---
+
+# How CDN solves this?
+
+With CDN:
+
+User in Australia → Upload Image → CloudFront → Origin Storage (S3)
+
+When users request the image:
+
+* CloudFront checks nearest edge location
+* If image exists in cache → Serve directly
+* If image does not exist → Fetch from origin (S3)
+* Store in edge cache for future requests
+
+Example edge locations:
+
+* India
+* USA
+* Australia
+* Europe
+
+So when a user from India requests the image:
+
+* CloudFront serves from nearest Indian edge location
+  instead of contacting origin every time.
+
+This greatly improves performance.
+
+---
+
+# Key Components of CloudFront
+
+## 1. Origin
+
+Origin is the backend source where content is stored.
+
+Examples:
+
+* Amazon S3
+* EC2
+* Load Balancer
+* On-prem server
+
+Example:
+S3 bucket storing images/videos
+
+---
+
+## 2. Edge Locations
+
+These are AWS global locations where cached content is stored.
+
+CloudFront has many edge locations worldwide.
+
+Purpose:
+
+* Reduce latency
+* Serve users faster
+
+---
+
+## 3. Distribution
+
+Distribution is the configuration used by CloudFront to serve content.
+
+Two major types:
+
+* Web Distribution → Websites, APIs
+* RTMP Distribution (legacy for streaming)
+
+Mostly we use Web Distribution.
+
+---
+
+# CloudFront + S3 Integration
+
+This is one of the most common AWS interview questions.
+
+## Step 1: Create S3 Bucket
+
+Create an S3 bucket to store static content.
+
+Example:
+
+* images
+* videos
+* CSS
+* JS files
+
+Example bucket:
+my-static-assets
+
+---
+
+## Step 2: Upload Files
+
+Upload static files to S3.
+
+Examples:
+
+* logo.png
+* video.mp4
+* index.html
+
+---
+
+## Step 3: Create CloudFront Distribution
+
+Go to CloudFront → Create Distribution
+
+Set origin as:
+S3 bucket
+
+CloudFront now uses S3 as origin.
+
+---
+
+## Step 4: Configure Access
+
+Best practice:
+Do NOT allow public access to S3 bucket.
+
+Instead:
+
+* Keep S3 private
+* Allow only CloudFront to access S3
+
+Use:
+
+* OAC (Origin Access Control) → Recommended
+  OR
+* OAI (Origin Access Identity) → Older method
+
+This improves security.
+
+---
+
+## Step 5: Access Through CloudFront URL
+
+CloudFront gives a URL like:
+
+xxxxxxxx.cloudfront.net
+
+Now users access files through CloudFront instead of directly accessing S3.
+
+Example:
+https://xxxxxxxx.cloudfront.net/logo.png
+
+---
+
+# How CloudFront Works Internally
+
+Step-by-step flow:
+
+1. User requests image
+2. Request hits nearest edge location
+3. CloudFront checks cache
+
+If cache hit:
+
+* Return file immediately
+
+If cache miss:
+
+* Fetch file from S3 origin
+* Store in edge cache
+* Return file to user
+
+---
+
+# Cache Hit vs Cache Miss
+
+## Cache Hit
+
+Requested content already exists in edge location.
+
+Result:
+
+* Very fast response
+* Low latency
+
+## Cache Miss
+
+Content not found in edge cache.
+
+Result:
+
+* CloudFront fetches from origin
+* Slightly slower first request
+
+Interview tip:
+Higher cache hit ratio = Better performance
+
+---
+
+# Benefits of CloudFront
+
+## 1. Low Latency
+
+Content delivered from nearest edge location.
+
+---
+
+## 2. Improved Security
+
+Users do not directly access S3.
+
+Additional security features:
+
+* AWS Shield
+* AWS WAF
+* HTTPS support
+* Geo restriction
+* Signed URLs / Signed Cookies
+
+---
+
+## 3. Reduced Cost
+
+Since cached content is served from edge locations:
+
+* Fewer requests to origin
+* Lower bandwidth cost
+* Reduced server load
+
+---
+
+## 4. High Availability
+
+AWS global infrastructure improves reliability.
+
+---
+
+# Common Interview Questions
+
+## Why CloudFront if S3 already exists?
+
+S3 stores content but does not provide global caching like CloudFront.
+
+CloudFront provides:
+
+* Faster access
+* Better security
+* Lower latency
+* Better scalability
+
+---
+
+## What is TTL in CloudFront?
+
+TTL = Time To Live
+
+Defines how long content stays cached in edge location.
+
+Examples:
+
+* Minimum TTL
+* Default TTL
+* Maximum TTL
+
+---
+
+## What is cache invalidation?
+
+Used when cached content must be removed before TTL expires.
+
+Example:
+You updated logo.png but users still see old image.
+
+Solution:
+Invalidate cache.
+
+Example path:
+/logo.png
+or
+/*
+
+---
+
+## Difference between CloudFront and Load Balancer?
+
+CloudFront:
+
+* CDN service
+* Focus on caching and content delivery
+
+Load Balancer:
+
+* Distributes traffic across backend servers
+
+---
+
+# Tips & Tricks for Interviews
+
+1. Always mention:
+   Origin → Edge Location → Distribution
+
+That shows strong understanding.
+
+---
+
+2. Use real-world examples like:
+   Instagram, Netflix, YouTube
+
+Interviewers like practical explanations.
+
+---
+
+3. Important terms to remember:
+
+* CDN
+* Edge Location
+* Cache Hit
+* Cache Miss
+* TTL
+* Invalidation
+* Distribution
+* Origin
+* OAC
+
+---
+
+4. Best Practice Architecture
+
+User → CloudFront → S3
+
+NOT
+
+User → S3 directly
+
+This is the architecture interviewers expect.
+
+---
+
+# Short Interview Answer (2-Min Version)
+
+AWS CloudFront is a managed CDN service used to deliver content with low latency and high transfer speed. It caches content at AWS edge locations worldwide. When users request data, CloudFront serves it from the nearest edge location instead of always fetching from origin servers like S3 or EC2. This reduces latency, improves performance, increases security, and lowers cost. Common use cases include static websites, media delivery, APIs, and streaming.
+
+
+
